@@ -10,62 +10,111 @@ bot = Bot("8459389604:AAHfjNynnxJeyyty7RvLuPkJB5j7vkTwhc0")
 dp = Dispatcher()
 
 
-bad_words = [
-    "admin",
-    "owner",
-    "killer",
-    "shadow",
-    "dragon",
-    "boss",
-    "228",
-    "1337"
-]
+# Ласкальні імена
+short_names = {
+    "Саша", "Сашко", "Шура",
+    "Льоша", "Льоха",
+    "Олежик",
+    "Діма", "Дімон",
+    "Женя", "Жека",
+    "Серьожа", "Серьога",
+    "Коля",
+    "Ваня",
+    "Петя"
+}
 
 
-foreign_surnames = [
-    "Сміт",
-    "Джонсон",
-    "Браун",
-    "Міллер",
-    "Вілсон",
-    "Шмідт",
-    "Мюллер",
-    "Гарсія",
-    "Россі"
-]
+# Відомі українські імена
+names = {
+    "Олександр",
+    "Олексій",
+    "Олег",
+    "Денис",
+    "Іван",
+    "Петро",
+    "Андрій",
+    "Максим",
+    "Дмитро",
+    "Сергій",
+    "Микола",
+    "Владислав",
+    "Роман",
+    "Богдан",
+    "Тарас",
+    "Василь",
+    "Юрій",
+    "Віталій",
+    "Антон",
+    "Євген",
+    "Марія",
+    "Анна",
+    "Олена",
+    "Катерина"
+}
 
 
-ukrainian_surnames = [
+# Прізвища, які точно RP
+ukraine_surnames = {
     "Шевченко",
     "Коваль",
     "Мельник",
     "Бондар",
     "Петренко",
-    "Кравченко"
-]
+    "Кравченко",
+    "Ткаченко",
+    "Савченко",
+    "Лисенко",
+    "Поліщук",
+    "Олійник",
+    "Козак",
+    "Бойко",
+    "Гнатюк",
+    "Даниленко"
+}
 
 
-short_names = [
-    "Саша",
-    "Сашко",
-    "Женя",
-    "Жека",
-    "Діма",
-    "Дімон",
-    "Коля",
-    "Ваня"
-]
+# Іноземні варіанти
+foreign_words = {
+    "Сміт",
+    "Джонсон",
+    "Браун",
+    "Міллер",
+    "Вілсон",
+    "Тейлор",
+    "Андерсон",
+    "Томпсон",
+    "Шмідт",
+    "Мюллер",
+    "Гарсія",
+    "Лопес",
+    "Россі",
+    "Майкл",
+    "Джон",
+    "Роберт",
+    "Джеймс"
+}
 
+
+# Ігрові слова
+bad_words = {
+    "admin",
+    "owner",
+    "boss",
+    "killer",
+    "shadow",
+    "dragon",
+    "228",
+    "1337"
+}
 
 
 @dp.message(CommandStart())
 async def start(message: Message):
     await message.answer(
-        "Введіть NickName для перевірки.\n\n"
+        "👋 Надішли NickName для перевірки RP.\n\n"
         "Приклад:\n"
-        "Олександр Коваль"
+        "Олег Коваль"
     )
-
 
 
 @dp.message()
@@ -79,38 +128,38 @@ async def check(message: Message):
         await message.answer(
             f"🔴 {nick}\n\n"
             "Не RP.\n"
-            "Причина: цифри у NickName."
+            "Причина: цифри в NickName."
         )
         return
 
 
-    # англійські символи
-    if re.search("[A-Za-z]", nick):
+    # латиниця
+    if re.search(r"[A-Za-z]", nick):
         await message.answer(
             f"🔴 {nick}\n\n"
             "Не RP.\n"
-            "Причина: використані латинські символи."
+            "Причина: англійські символи."
         )
         return
 
 
     # погані слова
     for word in bad_words:
-        if word.lower() in nick.lower():
+        if word in nick.lower():
             await message.answer(
                 f"🔴 {nick}\n\n"
                 "Не RP.\n"
-                "Причина: схоже на ігровий нік."
+                "Причина: ігровий нік."
             )
             return
 
 
-
+    # формат
     if len(parts) != 2:
         await message.answer(
             f"🟡 {nick}\n\n"
             "Потрібна RP-біографія.\n"
-            "Причина: неправильний формат."
+            "Формат: Ім'я Прізвище"
         )
         return
 
@@ -118,36 +167,18 @@ async def check(message: Message):
     name, surname = parts
 
 
-    # ласкаві імена
+    # ласкальні імена
     if name in short_names:
         await message.answer(
             f"🟢 {nick}\n\n"
             "RP.\n"
-            "Ласкальна форма імені дозволена."
+            "Ласкальна форма імені."
         )
         return
-        
-if surname in ukrainian_surnames:
-    await message.answer(
-        f"🟢 {nick}\n\n"
-        "NickName підходить для RP."
-    )
-    return
 
-
-# якщо прізвище схоже на українське
-if (
-    surname.endswith(("енко", "ук", "юк", "чук", "ко", "ський", "цький", "ич", "ов", "ев"))
-):
-    await message.answer(
-        f"🟢 {nick}\n\n"
-        "NickName підходить для RP.\n"
-        "Прізвище схоже на українське."
-    )
-    return
 
     # іноземні
-    if surname in foreign_surnames:
+    if name in foreign_words or surname in foreign_words:
         await message.answer(
             f"🟡 {nick}\n\n"
             "Потрібна RP-біографія.\n\n"
@@ -156,9 +187,8 @@ if (
         return
 
 
-
-    # українські
-    if surname in ukrainian_surnames:
+    # українські по списку
+    if name in names and surname in ukraine_surnames:
         await message.answer(
             f"🟢 {nick}\n\n"
             "NickName підходить для RP."
@@ -166,33 +196,42 @@ if (
         return
 
 
-
-    # невідомі, але схожі на реальні
-    if (
-        len(name) >= 3
-        and len(surname) >= 4
-        and name[0].isupper()
-        and surname[0].isupper()
+    # аналіз прізвища
+    if surname.endswith(
+        (
+            "енко",
+            "ук",
+            "юк",
+            "чук",
+            "ко",
+            "ський",
+            "цький",
+            "ич",
+            "ов",
+            "ев"
+        )
     ):
         await message.answer(
-            f"🟡 {nick}\n\n"
-            "Потрібна RP-біографія.\n\n"
-            "Причина: невідоме походження персонажа."
+            f"🟢 {nick}\n\n"
+            "NickName схоже на реальне RP."
         )
         return
 
 
-
+    # якщо невідоме
     await message.answer(
-        f"🔴 {nick}\n\n"
-        "Не RP."
+        f"🟡 {nick}\n\n"
+        "Потрібна RP-біографія.\n\n"
+        "Причина: невідоме походження персонажа."
     )
-
 
 
 async def main():
     await dp.start_polling(bot)
 
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 if __name__ == "__main__":
     asyncio.run(main())
