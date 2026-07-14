@@ -3,8 +3,6 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from config import "8459389604:AAHfjNynnxJeyyty7RvLuPkJB5j7vkTwhc0"
-
 bot = Bot("8459389604:AAHfjNynnxJeyyty7RvLuPkJB5j7vkTwhc0")
 dp = Dispatcher()
 
