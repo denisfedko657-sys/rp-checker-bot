@@ -126,7 +126,25 @@ async def check(message: Message):
             "Ласкальна форма імені дозволена."
         )
         return
+        
+if surname in ukrainian_surnames:
+    await message.answer(
+        f"🟢 {nick}\n\n"
+        "NickName підходить для RP."
+    )
+    return
 
+
+# якщо прізвище схоже на українське
+if (
+    surname.endswith(("енко", "ук", "юк", "чук", "ко", "ський", "цький", "ич", "ов", "ев"))
+):
+    await message.answer(
+        f"🟢 {nick}\n\n"
+        "NickName підходить для RP.\n"
+        "Прізвище схоже на українське."
+    )
+    return
 
     # іноземні
     if surname in foreign_surnames:
