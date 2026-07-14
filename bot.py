@@ -1,4 +1,4 @@
-mport asyncio
+import asyncio
 import re
 from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart
