@@ -10,57 +10,60 @@ bot = Bot("8459389604:AAHfjNynnxJeyyty7RvLuPkJB5j7vkTwhc0")
 dp = Dispatcher()
 
 
-# Українські імена
-ukraine_names = {
-    "Олег","Денис","Іван","Петро","Андрій",
-    "Максим","Олександр","Владислав","Микола",
-    "Сергій","Роман","Богдан","Дмитро",
-    "Тарас","Василь","Юрій","Віталій",
-    "Артур","Антон","Євген"
-}
+bad_words = [
+    "admin",
+    "owner",
+    "killer",
+    "shadow",
+    "dragon",
+    "boss",
+    "228",
+    "1337"
+]
 
 
-# Українські прізвища
-ukraine_surnames = {
-    "Коваль","Шевченко","Бондар","Мельник",
-    "Петренко","Кравченко","Ткаченко",
-    "Поліщук","Лисенко","Олійник",
-    "Савченко","Даниленко","Іванов",
-    "Дасслер"
-}
+foreign_surnames = [
+    "Сміт",
+    "Джонсон",
+    "Браун",
+    "Міллер",
+    "Вілсон",
+    "Шмідт",
+    "Мюллер",
+    "Гарсія",
+    "Россі"
+]
 
 
-# Іноземні (українською)
-foreign_surnames = {
-    "Сміт","Джонсон","Вільямс",
-    "Браун","Міллер","Вілсон",
-    "Тейлор","Андерсон","Томпсон",
-    "Девіс","Мартін","Кларк",
-    "Льюїс","Вокер","Холл"
-}
+ukrainian_surnames = [
+    "Шевченко",
+    "Коваль",
+    "Мельник",
+    "Бондар",
+    "Петренко",
+    "Кравченко"
+]
 
 
-foreign_names = {
-    "Майкл","Джон","Роберт",
-    "Девід","Кріс","Джеймс",
-    "Вільям","Томас"
-}
-
-
-bad_words = {
-    "admin","owner","killer",
-    "shadow","dragon","228",
-    "mafia","boss"
-}
+short_names = [
+    "Саша",
+    "Сашко",
+    "Женя",
+    "Жека",
+    "Діма",
+    "Дімон",
+    "Коля",
+    "Ваня"
+]
 
 
 
 @dp.message(CommandStart())
 async def start(message: Message):
     await message.answer(
-        "👋 Надішли RP NickName.\n\n"
+        "Введіть NickName для перевірки.\n\n"
         "Приклад:\n"
-        "Олег Коваль"
+        "Олександр Коваль"
     )
 
 
@@ -71,35 +74,43 @@ async def check(message: Message):
     nick = message.text.strip()
     parts = nick.split()
 
-    low = nick.lower()
-
-
-    # цифри та символи
-    if re.search(r"[0-9_]", nick):
+    # цифри
+    if re.search(r"[0-9]", nick):
         await message.answer(
-            f"❌ {nick}\n\n"
+            f"🔴 {nick}\n\n"
             "Не RP.\n"
-            "Причина: цифри або символи в NickName."
+            "Причина: цифри у NickName."
         )
         return
 
 
-    # заборонені слова
+    # англійські символи
+    if re.search("[A-Za-z]", nick):
+        await message.answer(
+            f"🔴 {nick}\n\n"
+            "Не RP.\n"
+            "Причина: використані латинські символи."
+        )
+        return
+
+
+    # погані слова
     for word in bad_words:
-        if word in low:
+        if word.lower() in nick.lower():
             await message.answer(
-                f"❌ {nick}\n\n"
+                f"🔴 {nick}\n\n"
                 "Не RP.\n"
-                "Причина: ігровий нік."
+                "Причина: схоже на ігровий нік."
             )
             return
 
 
+
     if len(parts) != 2:
         await message.answer(
-            f"❌ {nick}\n\n"
-            "Не RP.\n"
-            "Формат має бути: Ім'я Прізвище."
+            f"🟡 {nick}\n\n"
+            "Потрібна RP-біографія.\n"
+            "Причина: неправильний формат."
         )
         return
 
@@ -107,31 +118,56 @@ async def check(message: Message):
     name, surname = parts
 
 
-    # іноземні
-    if name in foreign_names or surname in foreign_surnames:
+    # ласкаві імена
+    if name in short_names:
         await message.answer(
-            f"⚠️ {nick}\n\n"
-            "Потрібна RP-біографія.\n\n"
-            "Причина: іноземне ім'я або прізвище."
+            f"🟢 {nick}\n\n"
+            "RP.\n"
+            "Ласкальна форма імені дозволена."
         )
         return
 
 
-    # українські
-    if name in ukraine_names and surname in ukraine_surnames:
+    # іноземні
+    if surname in foreign_surnames:
         await message.answer(
-            f"✅ {nick}\n\n"
+            f"🟡 {nick}\n\n"
+            "Потрібна RP-біографія.\n\n"
+            "Причина: іноземне походження персонажа."
+        )
+        return
+
+
+
+    # українські
+    if surname in ukrainian_surnames:
+        await message.answer(
+            f"🟢 {nick}\n\n"
             "NickName підходить для RP."
         )
         return
 
 
-    # все інше
+
+    # невідомі, але схожі на реальні
+    if (
+        len(name) >= 3
+        and len(surname) >= 4
+        and name[0].isupper()
+        and surname[0].isupper()
+    ):
+        await message.answer(
+            f"🟡 {nick}\n\n"
+            "Потрібна RP-біографія.\n\n"
+            "Причина: невідоме походження персонажа."
+        )
+        return
+
+
+
     await message.answer(
-        f"❌ {nick}\n\n"
-        "Не RP.\n\n"
-        "Причина: невідоме ім'я або прізвище.\n"
-        "Потрібно створити RP-біографію персонажа."
+        f"🔴 {nick}\n\n"
+        "Не RP."
     )
 
 
