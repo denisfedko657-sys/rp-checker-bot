@@ -11,6 +11,38 @@ from loaders import (
     ADMINS,
 )
 
+UKRAINIAN_SURNAME_ENDINGS = (
+    "енко",
+    "ук",
+    "юк",
+    "чук",
+    "чак",
+    "як",
+    "ак",
+    "ський",
+    "цький",
+    "евич",
+    "ович",
+    "ич",
+    "ко",
+    "ів",
+    "їв",
+    "ишин",
+)
+
+
+def surname_check(surname: str):
+    surname = surname.lower()
+
+    if surname.lower() in {x.lower() for x in UKRAINIAN_SURNAMES}:
+        return "ok"
+
+    for ending in UKRAINIAN_SURNAME_ENDINGS:
+        if surname.endswith(ending):
+            return "manual"
+
+    return "bad"
+
 
 def check_nickname(nickname: str):
     nickname = nickname.strip()
@@ -18,7 +50,7 @@ def check_nickname(nickname: str):
     parts = nickname.split()
 
     if len(parts) != 2:
-        return False, "❌ Нік має бути у форматі: Ім'я Прізвище"
+        return False, "❌ Нік повинен бути у форматі: Ім'я Прізвище"
 
     name = parts[0]
     surname = parts[1]
@@ -27,63 +59,67 @@ def check_nickname(nickname: str):
     surname_lower = surname.lower()
 
     # Заборонені слова
-    if name_lower in BANNED or surname_lower in BANNED:
-        return False, "❌ Нік містить заборонені слова."
+    if (
+        name_lower in {x.lower() for x in BANNED}
+        or surname_lower in {x.lower() for x in BANNED}
+    ):
+        return False, "❌ Містить заборонені слова."
 
     # Російські імена
     if name in RUSSIAN_NAMES:
         return False, "❌ Російське ім'я."
 
-    # Зменшувальні форми
+    # Зменшувальні
     if name in DIMINUTIVES:
-        return False, "❌ Використана зменшувальна форма імені."
+        return False, "❌ Зменшувальна форма імені."
 
     # Політики
     if (
-        name_lower in POLITICIANS
-        or surname_lower in POLITICIANS
+        name_lower in {x.lower() for x in POLITICIANS}
+        or surname_lower in {x.lower() for x in POLITICIANS}
     ):
         return False, "❌ Заборонено використовувати прізвища політиків."
 
     # Блогери
     if (
-        name_lower in BLOGGERS
-        or surname_lower in BLOGGERS
+        name_lower in {x.lower() for x in BLOGGERS}
+        or surname_lower in {x.lower() for x in BLOGGERS}
     ):
         return False, "❌ Заборонено використовувати імена блогерів."
 
     # Адміністрація
     if (
-        name_lower in ADMINS
-        or surname_lower in ADMINS
+        name_lower in {x.lower() for x in ADMINS}
+        or surname_lower in {x.lower() for x in ADMINS}
     ):
         return False, "❌ Заборонено використовувати ніки адміністрації."
 
     # Об'єкти
     if (
-        name_lower in OBJECTS
-        or surname_lower in OBJECTS
+        name_lower in {x.lower() for x in OBJECTS}
+        or surname_lower in {x.lower() for x in OBJECTS}
     ):
         return False, "❌ Не можна використовувати назви предметів."
 
     # Проєкти
     if (
-        name_lower in PROJECTS
-        or surname_lower in PROJECTS
+        name_lower in {x.lower() for x in PROJECTS}
+        or surname_lower in {x.lower() for x in PROJECTS}
     ):
         return False, "❌ Не можна використовувати назви проєктів."
 
-    # Українські імена
+    # Українське ім'я
     if UKRAINIAN_NAMES:
         if name not in UKRAINIAN_NAMES:
-            return False, "❌ Українське ім'я не знайдено в базі."
+            return False, "❌ Ім'я відсутнє в українській базі."
 
-    # Українські прізвища
-    if UKRAINIAN_SURNAMES:
-        if surname not in UKRAINIAN_SURNAMES:
-            return (
-                False,
-                "⚠️ Прізвище не знайдено в базі. Потрібна ручна перевірка."
-            )
+    # Перевірка прізвища
+    result = surname_check(surname)
 
-    return True, "✅ Нік відповідає правилам UG."
+    if result == "ok":
+        return True, "✅ Нік відповідає правилам."
+
+    if result == "manual":
+        return False, "⚠️ Рідкісне прізвище. Потрібна ручна перевірка."
+
+    return False, "❌ Прізвище не схоже на українське."
