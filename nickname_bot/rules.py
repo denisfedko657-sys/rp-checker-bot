@@ -1,4 +1,5 @@
 import re
+from ai_checker import ai_check_nickname
 
 from loaders import (
     UKRAINIAN_NAMES,
@@ -95,4 +96,9 @@ def check_nickname(nickname: str):
         if surname_l.endswith(ending):
             return False, "⚠️ Рідкісне прізвище. Потрібна ручна перевірка."
 
-    return False, "❌ Прізвище не схоже на українське."
+  result = ai_check_nickname(name, surname)
+
+if result["allowed"]:
+    return True, "✅ " + result["reason"]
+
+return False, "❌ " + result["reason"]
